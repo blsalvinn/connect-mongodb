@@ -1,34 +1,45 @@
-const express = require('express')
-const app = express()
+const { MongoClient } = require('mongodb');
+// or as an es module:
+// import { MongoClient } from 'mongodb'
 
-const mongoose = require('mongoose')
-mongoose.connect("mongodb://localhost:27017/TestDB", { useNewUrlParser: true, useUnifiedTopology: true }, (err) => {
-    if (!err) console.log('db connected')
-    else console.log('error!');
-})
+// Connection URL
+const url = 'mongodb://localhost:27017';
+const client = new MongoClient(url);
 
-const NewSchema = new mongoose.Schema({
-    name: String,
-    age: Number
-});
+// Database Name
+const dbName = 'TestDB';
 
-const newModel = new mongoose.model("Collection", NewSchema)
-// const data = new newModel({name: 'messy', age: 30})
-// data.save()
+async function main() {
+    // Use connect method to connect to the server
+    await client.connect();
+    console.log('Connected successfully to server');
+    const db = client.db(dbName);
+    // console.log('This is db',db);
+    const collection = db.collection('collections');
 
-const data = async () => {
-    const result = await newModel.insertMany([
-        {
-            name: 'rock',
-            age: 30
-        },
-        {
-            name: 'tokyo',
-            age: 23
-        }
-    ])
-    console.log(result);
+    // the following code examples can be pasted here...
+    // const insertResult = await collection.insertMany([
+    //     {
+    //         "name": "messy",
+    //         "age": 30,
+    //     },
+    //     {
+    //         "name": "messy",
+    //         "age": 30,
+    //     },
+    //     {
+    //         "name": "messy",
+    //         "age": 30,
+    //     },
+
+    // ]);
+    // console.log('Inserted documents =>', insertResult);
+    const findResult = await collection.find({}).toArray();
+    console.log('Found documents =>', findResult);
+    return 'done.';
 }
-data();
 
-app.listen(5000, () => { console.log('connect') })
+main()
+    .then(console.log)
+    .catch(console.error)
+    .finally(() => client.close());
